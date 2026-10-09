@@ -1,0 +1,62 @@
+# TenantMind — Development & Test Dependencies
+# ============================================================
+# Phase 1 — Foundation
+#
+# POLICY
+# ------
+# * Development and test tooling ONLY. Nothing in this file is
+#   required to run the application.
+# * Every direct dependency is pinned to an EXACT version (`==`), for
+#   the same reproducibility reason as requirements.txt.
+# * Resolved in the same environment as backend/requirements.txt, so
+#   the two files must not contradict each other.
+#
+# Install with, from the project root:
+#
+#     ./.venv/bin/pip install -r backend/requirements-dev.txt
+#
+# Target interpreter: Python 3.12.14
+
+
+# -----------------------------------------------------------------
+# Phase 1 development dependencies
+# -----------------------------------------------------------------
+
+# pytest — unit test runner.
+# PMP §21 Testing Strategy, "Unit Tests".
+pytest==9.1.1
+
+# pytest-asyncio — async test support.
+# Required by the async endpoints in Phase 1 (lifespan, /health/ready)
+# and mandatory later for the SSE query endpoint (PMP §14).
+# Requires pytest>=8.4,<10; satisfied by pytest 9.1.1 above.
+pytest-asyncio==1.4.0
+
+# httpx — HTTP client, and the ASGI transport behind
+# fastapi.testclient.TestClient.
+# PMP §15 Operations endpoints (/health, /health/ready) are the first
+# things tested. NOTE: starlette's TestClient is sensitive to httpx
+# major versions; the 0.28.x line is the one resolved against
+# starlette 1.7.0 in this set.
+httpx==0.28.1
+
+# ruff — linter and formatter, the lint gate for CI.
+# PMP §23 technology stack (CI/CD: GitHub Actions). Distributed as a
+# standalone Rust binary; contributes no Python dependencies.
+ruff==0.16.9
+
+# mypy — static type checker.
+# PMP §8 Maintainability, "Type hints". Adds ast-serialize, librt,
+# mypy_extensions, pathspec and typing-extensions as transitive deps.
+mypy==2.3.1
+
+
+# -----------------------------------------------------------------
+# Deferred development dependencies — DO NOT ADD YET
+# -----------------------------------------------------------------
+#   Phase 8  (Testing & evaluation)
+#            pytest-cov    — coverage reporting (PMP §8 Maintainability)
+#            faker         — seed/fixture data for isolation tests
+#
+# Add these when the coverage report and the tenant-isolation test
+# fixtures are actually being written, not before.

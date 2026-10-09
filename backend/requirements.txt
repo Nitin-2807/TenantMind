@@ -1,0 +1,419 @@
+# TenantMind — Runtime Dependencies
+# ============================================================
+# Phase 1 — Foundation
+#
+# POLICY
+# ------
+# * Every direct dependency is pinned to an EXACT version (`==`).
+#   Unpinned or ranged requirements are not permitted in this file,
+#   because TenantMind must install identically on every machine
+#   and in CI.
+# * `requirements.txt` holds RUNTIME dependencies only.
+#   Development and test tooling belongs in `requirements-dev.txt`.
+# * Do not add a dependency ad hoc with `pip install <pkg>`. Every new
+#   package is added here, in the same change that first imports it.
+# * Versions were selected as one coherent set resolved together on
+#   CPython 3.12.14, not chosen independently per package. See the
+#   dependency resolution notes at the bottom of this file.
+#
+# Install with, from the project root:
+#
+#     ./.venv/bin/pip install -r backend/requirements.txt
+#
+# Target interpreter: Python 3.12.14
+
+
+# -----------------------------------------------------------------
+# Phase 1 runtime dependencies
+# -----------------------------------------------------------------
+
+# FastAPI — application foundation, routing, request/response handling.
+# PMP §22 Phase 1 deliverable "FastAPI application"; implements the
+# endpoint surface in §15.
+# Pulls starlette, pydantic, pydantic-core, typing-extensions,
+# typing-inspection, annotated-doc and opentelemetry-api.
+fastapi==0.142.1
+
+# Uvicorn — ASGI server for local development.
+# PMP §23 technology stack (Backend).
+# PLAIN uvicorn, deliberately NOT `uvicorn[standard]`: the standard
+# extra adds uvloop, httptools, watchfiles and websockets, which are
+# unnecessary for the Phase 1 foundation. Plain uvicorn needs only
+# click and h11. Revisit when SSE (§14) makes websockets relevant.
+uvicorn==0.54.0
+
+# Pydantic Settings — environment-based configuration and typed
+# settings with .env support.
+# PMP §22 Phase 1 deliverable "Configuration management";
+# §8 Maintainability "Environment-based configuration";
+# §17 "Secure environment variables".
+# Pydantic itself is a TRANSITIVE dependency (via this package and
+# via fastapi) and is deliberately NOT pinned here. Pinning it
+# separately would duplicate a constraint the resolver already owns
+# and would risk pinning a version outside fastapi's supported range.
+pydantic-settings==2.15.0
+
+
+# -----------------------------------------------------------------
+# Phase 1 runtime dependencies — database foundation (Step 4)
+# -----------------------------------------------------------------
+
+# SQLAlchemy — ORM and Core, using the 2.x API throughout
+# (DeclarativeBase / Mapped / mapped_column, Session, sessionmaker).
+# PMP §23 technology stack (Database: SQLAlchemy + PostgreSQL);
+# §22 Phase 1 deliverable "Database layer".
+# Requires greenlet and typing-extensions.
+#
+# VERSION CHOICE: 2.0.54, not the newer 2.1.1. The 2.0.x line is the
+# mature, widely-deployed 2.x series; 2.1.1 was published days before
+# this pin and has had no soak time. 2.0.54 carries the full 2.x API
+# this project uses, so nothing here is foreclosed by the choice.
+sqlalchemy==2.0.54
+
+# Alembic — schema migrations.
+# PMP §22 Phase 1 deliverable "Database layer" (migration tooling).
+# Requires Mako (templates) and SQLAlchemy>=2.0, satisfied above.
+alembic==1.20.0
+
+# psycopg with the `binary` extra — PostgreSQL driver (psycopg 3).
+# PMP §23 technology stack (Database: PostgreSQL).
+# The `binary` extra pulls psycopg-binary, which ships prebuilt
+# manylinux wheels for CPython 3.12 (libpq bundled). This avoids
+# building libpq from source, which would require a local C toolchain
+# and PostgreSQL client headers on every machine and in CI.
+# Do NOT substitute psycopg2/psycopg2-binary: that is the superseded
+# psycopg 2 line.
+#
+# `tzdata` is required by psycopg on every platform, not only Windows.
+psycopg[binary]==3.3.6
+
+
+# -----------------------------------------------------------------
+# Phase 2 runtime dependencies — authentication identity (Step 2)
+# -----------------------------------------------------------------
+
+# argon2-cffi — Argon2 password hashing.
+# PMP §17 Security Architecture, "Authentication: Argon2 or bcrypt password
+# hashing"; PMP §8 "Passwords must never be stored in plaintext".
+# CHOSE Argon2 over bcrypt: Argon2 is memory-hard, so a stolen hash table is
+# expensive to attack offline — this is why the winner of the Password
+# Hashing Competition is the modern recommendation, and why `users.
+# password_hash` was sized at 255 characters in Phase 2 Step 1 specifically to
+# hold an Argon2 PHC string (~95-100 characters).
+# CHOSE argon2-cffi over passlib: passlib's last release was 2020 and its
+# Argon2 support requires an out-of-tree plugin, so "argon2 via passlib" is
+# strictly more moving parts for a less maintained wrapper. argon2-cffi is
+# the reference binding, actively maintained (25.1.0), MIT, and its API is
+# three functions. bcrypt is deliberately NOT also installed: two hashing
+# libraries in one project means two implementation paths and a real risk of
+# an unverified password being compared with the wrong one.
+# Requires argon2-cffi-bindings (transitive, cp310-abi3 wheels cover 3.12).
+argon2-cffi==25.1.0
+
+# PyJWT — JWT creation and verification.
+# PMP §17 "Short-lived JWT access tokens"; PMP §8 "JWT access tokens must
+# have short expiration times"; PMP §14 refresh_tokens.
+# CHOSE PyJWT over python-jose: PyJWT is the actively maintained reference
+# implementation and, critically, its `decode` takes the accepted algorithms
+# as a required server-side argument rather than reading `alg` from the
+# token — that is exactly the "alg: none" / algorithm-confusion defence
+# Phase 2 Step 2 has to prove. python-jose has a history of algorithm-
+# negotiation defects and is not maintained to the same standard.
+# CHOSE PyJWT over fastapi-users / authlib: those are whole user-management
+# frameworks. PMP §15's /auth/* endpoints and this project's tenant-scoped
+# identity model need a signing primitive, not a framework; pulling one in
+# would implement the user-invitation surface that is explicitly out of
+# scope for this step.
+# No runtime dependencies on CPython 3.12: `typing_extensions` is required
+# only for Python < 3.11, and `cryptography` only under the unused [crypto]
+# extra. HS256 is a stdlib-hmac computation, so no crypto dependency is
+# needed at all.
+PyJWT==2.15.1
+
+
+# -----------------------------------------------------------------
+# Phase 2.4 runtime dependencies — document management
+# -----------------------------------------------------------------
+
+# python-multipart — `multipart/form-data` parsing.
+# PMP §15 `POST /documents`; PMP §10's write path begins at that request.
+# REQUIRED BY FASTAPI, not chosen: `File()` and `Form()` in
+# `app/api/documents.py` make Starlette resolve a `python-multipart`
+# dependency at request time and fail with a 500 explaining so if it is
+# missing. An upload endpoint therefore cannot work without it.
+#
+# ADDED LATE (Phase 2.5). Phase 2.4 installed 0.0.32 into `.venv` and
+# `app/api/documents.py` shipped depending on it, but this file never
+# gained the line — so the file's own policy ("every direct dependency
+# is pinned here, in the same change that first imports it"; "TenantMind
+# must install identically on every machine and in CI") was broken for
+# one package: a clean `pip install -r requirements.txt` produced an
+# environment in which every document upload 500s. Found by the Phase 2.5
+# dependency audit, which is exactly what such an audit is for. The
+# version is unchanged, so no resolution moved.
+python-multipart==0.0.32
+
+
+# -----------------------------------------------------------------
+# Phase 2.5 runtime dependencies — RAG foundation
+# -----------------------------------------------------------------
+#
+# Three packages, each with a named requirement in the PMP. Nothing from
+# the deferred list below was installed "just in case": the reranker,
+# BM25, Redis, Celery and the LLM SDKs all belong to phases that have not
+# started, and a vector store that cannot be exercised is not a
+# dependency this phase is allowed to take on faith.
+
+# pypdf — PDF text extraction.
+# PMP §18's ingestion pipeline begins at "Parser"; PMP §2's document
+# domain (handbooks, HR policies, SOPs, compliance documents) is
+# overwhelmingly PDF, and Phase 2.4 accepts `application/pdf` uploads.
+# There is no standard-library option: PDF's text operators live inside a
+# cross-reference table behind a font encoding, and reimplementing that
+# would be a parser with no test corpus.
+# Pure Python, no runtime dependencies of its own.
+pypdf==6.19.0
+
+# python-docx — DOCX text extraction.
+# Same argument for `.docx`, which is the other dominant enterprise
+# format. Chosen over hand-rolling `word/document.xml` parsing because
+# this format's paragraph and table structure is fiddly enough that a
+# home-grown reader is a source of silently-dropped content, and silently
+# dropped content is a retrieval bug nobody notices.
+# Requires lxml (transitive; manylinux wheels cover 3.12).
+python-docx==1.2.0
+
+# qdrant-client — the Qdrant vector store client.
+# PMP §23 technology stack (Vector Database: Qdrant); PMP §13 specifies
+# one collection per tenant with a documented point payload; PMP §22
+# Phase 4 lists "Qdrant" as a deliverable.
+# CHOSE the official client over hand-written REST calls against Qdrant's
+# HTTP API: the client's request/response models are the API's contract,
+# it retries and re-connects, and its `local` mode gives the unit tests a
+# real engine to exercise without a server. The alternative is ~200 lines
+# of untyped JSON assembly re-implemented on every Qdrant upgrade.
+# Pulls grpcio, protobuf, portalocker, httpx[http2] (h2/hpack/hyperframe)
+# and numpy — the gRPC transport and the in-process local mode. That
+# footprint is the price of the official client and is accepted
+# deliberately; it is called out here rather than discovered later.
+qdrant-client==1.19.1
+
+
+# -----------------------------------------------------------------
+# Phase 5 Step 1 runtime dependencies — background processing
+# foundation
+# -----------------------------------------------------------------
+
+# Celery — the task queue (PMP §22 Phase 5 deliverable "Celery";
+# §20 "Background Processing"; §19 "Worker/task coordination").
+# PLAIN celery, deliberately NOT `celery[redis]`: the redis extra is
+# only `kombu[redis]`, which is only `redis`, and `redis` is pinned
+# directly below. Declaring the extra as well would restate a
+# constraint the resolver already owns and would give the pin below
+# two sources of truth.
+#
+# `celery.contrib.testing.worker`, used by
+# tests/test_worker_integration.py to run a real worker against the
+# real broker, ships inside this wheel — no test-only extra needed.
+celery==5.6.3
+
+# redis-py — the client for the Celery broker and result backend.
+# PMP §22 Phase 5 deliverable "Redis"; §19 names Redis for query
+# caching, rate limiting, temporary task information and worker/task
+# coordination. Only the first two uses are later phases; this step
+# uses the broker half, and the client is pinned directly rather than
+# inherited transitively because the integration suite imports it.
+#
+# 6.4.0 is not the newest redis-py and the reason is a hard constraint,
+# not a preference: kombu 5.6.x — the transport Celery uses to talk to
+# Redis — declares `redis<6.5,>=4.5.2`. redis-py 7.x and 8.x are
+# therefore not installable alongside Celery at all, and `pip install
+# celery redis` resolves to 6.4.0 on its own. Pinning it here makes that
+# visible instead of leaving the next person to rediscover it.
+redis==6.4.0
+
+
+# -----------------------------------------------------------------
+# Deferred runtime dependencies — DO NOT ADD YET
+# -----------------------------------------------------------------
+# Recorded here for review visibility only. Adding any of these before
+# its phase is scope creep; they must not be installed "just in case".
+#
+#   Phase 2.5+  (not taken — see the note below)
+#            structlog, python-slugify, google-genai
+#   Phase 6  (Advanced retrieval)
+#            cross-encoder reranker; BM25 is expected to be served by
+#            PostgreSQL full-text search, so rank-bm25 may not be
+#            needed at all — decide at Phase 6.
+#   Phase 4/7  (query path)
+#            an LLM SDK — the embedding client in `app/rag/embeddings.py`
+#            speaks Gemini's REST API over the standard library, so no
+#            SDK is needed to call it. Revisit if a second provider is
+#            ever added and the hand-written transport stops being the
+#            smaller option.
+#   Phase 5 Steps 2+  (background processing)
+#            nothing new is required. Task dispatching, retries and
+#            failure tracking are Celery features, not new packages:
+#            `autoretry_for`/`max_retries`/`acks_late` are configuration
+#            on this same celery pin, and recording failure in
+#            PostgreSQL reuses the existing `documents` table. Decide
+#            at Step 2 whether a message-signature library is ever
+#            warranted; nothing about dispatching requires one.
+#   Phase 5+  (a real broker deployment)
+#            a Celery result-backend exporter — not needed for the
+#            Redis backend installed here.
+#
+#   Deliberately NOT installed, though each has a plausible argument:
+#   RQ, Dramatiq, Huey — alternative task frameworks. PMP §23 names
+#     Celery, and one queue implementation is the whole point.
+#   kafka-python, pika, kombu's amqp extras — message brokers other
+#     than the Redis one PMP §19 specifies. Installing an AMQP client
+#     "in case" is how a project ends up able to silently talk to a
+#     broker nobody runs; `app/core/config.py` now refuses any
+#     `redis_url` whose scheme is not `redis://` or `rediss://` for
+#     exactly that reason.
+#   langchain, llama-index, haystack — orchestration frameworks. PMP
+#     §18 specifies this project's own parse/chunk/embed/upsert
+#     pipeline, which already exists and works.
+#
+# DECIDED in Phase 2.5, not deferred: the embedding provider.
+# PMP §23 offers "Sentence Transformers / API model" for embeddings —
+# two options, and only one of them can be installed in this phase
+# without dragging in PyTorch. `sentence-transformers` requires `torch`,
+# `transformers` and `tokenizers`, and a plain requirements file cannot
+# force a CPU-only wheel, so `pip install sentence-transformers` on an
+# ordinary machine resolves to a CUDA build of PyTorch of roughly 2.5 GB.
+# That is recorded here because it was the reason this phase's own
+# dependency ledger previously said the decision was "settled when the
+# embedding layer is built". It is now settled: this phase implements the
+# **API model** option, behind the `EmbeddingProvider` abstraction, so a
+# later switch to a local model is one subclass and one factory branch —
+# and nothing in the ingestion pipeline changes.
+
+
+# -----------------------------------------------------------------
+# Dependency resolution notes
+# -----------------------------------------------------------------
+# Interpreter : CPython 3.12.14 (Linux x86_64)
+# Resolved as : one combined environment (runtime + dev), not per-package
+# Result      : 70 packages, zero conflicts
+#               (56 before Phase 5 Step 1; celery and redis-py added 14)
+#
+# Constraint chain that the selected versions satisfy:
+#
+#   fastapi 0.142.1          -> starlette>=0.46.0      (got 1.7.0)
+#                            -> pydantic>=2.9.0        (got 2.13.5)
+#                            -> typing-inspection>=0.4.2 (got 0.4.4)
+#                            -> annotated-doc>=0.0.2    (got 0.0.5)
+#                            -> opentelemetry-api>=1.44.0 (got 1.45.0)
+#   pydantic-settings 2.15.0 -> pydantic>=2.7.0         (got 2.13.5)
+#                            -> python-dotenv>=0.21.0  (got 1.2.3)
+#                            -> typing-inspection>=0.4.0 (got 0.4.4)
+#   uvicorn 0.54.0           -> click>=7.0              (got 8.5.0)
+#                            -> h11>=0.8                (got 0.16.0)
+#   pytest-asyncio 1.4.0     -> pytest>=8.4,<10         (got 9.1.1)
+#   httpx 0.28.1             -> httpcore==1.*           (got 1.0.9)
+#   sqlalchemy 2.0.54        -> greenlet>=1             (got 3.5.6)
+#                            -> typing-extensions>=4.6.0 (got 4.16.0)
+#   alembic 1.20.0           -> SQLAlchemy>=2.0         (got 2.0.54, ours)
+#                            -> Mako                    (got 1.4.3)
+#   Mako 1.4.3               -> MarkupSafe>=2.0         (got 3.0.3)
+#   psycopg 3.3.6            -> typing-extensions>=4.6  (got 4.16.0, shared)
+#                            -> tzdata                  (got 2026.2)
+#                            -> psycopg-binary==3.3.6   (via [binary] extra)
+#   argon2-cffi 25.1.0       -> argon2-cffi-bindings~=  (got 26.1.0, cp310-abi3)
+#                            -> cffi>=1.0.0             (got 2.1.1, manylinux wheel)
+#   PyJWT 2.15.1             -> (no runtime dependencies on CPython >= 3.11)
+#   python-multipart 0.0.32  -> (no runtime dependencies; Starlette imports it)
+#   pypdf 6.19.0             -> (no runtime dependencies; pure Python)
+#   python-docx 1.2.0        -> lxml>=3.1.0             (got 6.1.3, manylinux wheel)
+#                            -> typing-extensions>=4.9.0 (got 4.16.0, shared)
+#   qdrant-client 1.19.1     -> httpx[http2]>=0.23.0    (got 0.28.1, shared)
+#                            -> urllib3>=1.26.0         (got 2.8.0)
+#                            -> grpcio>=1.59.0          (got 1.84.0)
+#                            -> protobuf>=3.20.0        (got 7.36.2)
+#                            -> portalocker>=2.7.0      (got 3.2.0)
+#                            -> numpy>=1.21             (got 2.5.3)
+#                            -> h2>=4.1.0               (got 4.4.1)
+#                            -> hpack>=4.0,<5           (got 4.2.0)
+#                            -> hyperframe>=6.0,<7      (got 6.1.0)
+#   celery 5.6.3            -> billiard>=4.2.1,<5.0    (got 4.3.1)
+#                            -> kombu>=5.6.0           (got 5.6.2)
+#                            -> vine>=5.1.0,<6.0       (got 5.1.0)
+#                            -> click>=8.1.2,<9.0      (got 8.5.0, shared)
+#                            -> python-dateutil>=2.8.2 (got 2.9.0.post0)
+#                            -> tzlocal               (got 5.4.4)
+#   kombu 5.6.2             -> amqp>=5.1.1,<6.0       (got 5.4.1)
+#                            -> vine==5.1.0            (got 5.1.0, shared)
+#                            -> packaging             (got 26.3, shared)
+#                            -> tzdata                 (got 2026.5, shared)
+#   redis 6.4.0             -> (no runtime dependencies)
+#   tzlocal 5.4.4           -> tzdata                 (shared)
+#
+# Four selection notes:
+#
+# 1. fastapi 0.142.x declares opentelemetry-api as a HARD dependency.
+#    That is a genuine change in recent FastAPI releases, not an
+#    error, and opentelemetry-api itself has no further dependencies.
+#    It is accepted deliberately rather than by pinning an older
+#    FastAPI, because downgrading would be avoiding a current stable
+#    release over a transitive package that is small and widely used.
+# 2. mypy 2.3.1 is a MAJOR version bump over the long-lived 1.x line
+#    and adds two new dependencies (ast-serialize, librt) in place of
+#    the older mypyc-compiled build. It is a stable release and is
+#    used here, but the CI type-check gate is the place where any
+#    behaviour change would surface first.
+# 3. SQLAlchemy 2.0.54 was chosen over the newer 2.1.1 (published days
+#    before this pin). 2.0.x is the mature, widely-deployed 2.x line
+#    and exposes the complete 2.x API this project uses. greenlet is
+#    pulled in as a hard requirement of 2.0.x on common platforms, but
+#    is not used by the synchronous engine built in Step 4; it exists
+#    for the asyncio support this phase deliberately does not adopt.
+#    Revisit if the async stack is ever introduced.
+# 4. argon2-cffi 25.1.0 resolves argon2-cffi-bindings 26.1.0, which
+#    publishes a cp310-abi3 wheel. The abi3 tag is why ONE binary wheel
+#    covers CPython 3.10, 3.11, 3.12 and 3.13 rather than needing a
+#    per-interpreter build; `cffi` is its single runtime dependency and
+#    also ships a manylinux wheel, so no compiler is needed anywhere in
+#    this chain. The Python-level argon2-cffi distribution is pure Python.
+# 5. PyJWT 2.15.1 adds nothing on 3.12. Its declared dependency on
+#    typing_extensions is conditional on Python < 3.11 and is therefore
+#    not installed here; its `cryptography` dependency is under the
+#    `[crypto]` extra, which this project does not use because HS256 is
+#    an HMAC-SHA256 computation and HMAC is in the standard library.
+#    A deliberate zero-dependency addition.
+# 6. qdrant-client 1.19.1 is the only Phase 2.5 dependency with a large
+#    transitive footprint: numpy (16.7 MB wheel) and grpcio (5 MB) arrive
+#    with it. numpy backs the client's in-process `local` mode; grpcio
+#    backs the gRPC transport, which this project does not use — Qdrant
+#    is reached over HTTP/REST, so the protobuf transport is paid for
+#    and not used. Neither is removable while the official client is the
+#    client, which is why the alternative (hand-written REST calls) was
+#    weighed rather than assumed, and why the footprint is recorded here
+#    instead of being discovered at the next install.
+# 7. celery 5.6.3 is the newest release of the 5.x line. The next major,
+#    Celery 6, is deliberately not taken: it flips the default of
+#    `broker_connection_retry_on_startup` to False, which changes how a
+#    worker behaves when its broker is not yet listening — a behaviour
+#    Phase 5 Steps 2+ will have to reason about on purpose, and
+#    `celery.contrib.testing.worker` is only exercised against 5.x here.
+#    Recorded so the constraint is visible before somebody upgrades and
+#    wonders why workers stopped waiting for Redis.
+# 8. redis-py 6.4.0 is two majors behind the newest release, and not by
+#    choice: kombu 5.6.x caps it at `<6.5`, which is what makes redis-py
+#    7.x and 8.x uninstallable alongside Celery at all. 6.4.0 is the
+#    newest version this project *can* use. It also moves one existing
+#    transitive pin: `tzdata`, previously resolved to 2026.2 by psycopg,
+#    goes to 2026.5 because kombu requires it too. Both constraints are
+#    open-ended, so neither is a direct pin; the resolution simply moves.
+# 9. Fourteen new packages arrive with celery and redis-py, and none is
+#    avoidable while Celery is the task queue. amqp and vine are kombu's
+#    transport layer; billiard is Celery's process pool; click-didyoumean,
+#    click-plugins, click-repl, prompt_toolkit and wcwidth belong to the
+#    `celery` CLI; python-dateutil and six are kombu's metadata handling;
+#    tzlocal and tzdata are Celery's timezone support. prompt_toolkit is the
+#    largest at roughly 500 KB and is used only by the `celery inspect`
+#    shell.
+#
+# Packages present only to satisfy Python < 3.11 (correctly absent on
+# 3.12): exceptiongroup, tomli, backports-asyncio-runner.

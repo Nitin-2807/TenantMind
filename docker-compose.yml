@@ -1,0 +1,212 @@
+# TenantMind — local PostgreSQL, Qdrant and Redis for integration tests
+# ============================================================
+# PURPOSE
+# -------
+# Disposable servers for the integration suites:
+#
+#   postgres -> backend/tests/test_postgres_integration.py
+#   qdrant   -> backend/tests/test_qdrant_integration.py
+#   redis    -> backend/tests/test_worker_integration.py
+#
+# The PostgreSQL suite issues `DROP TABLE`, so it must never be
+# pointed at a real database; the guard in the suite refuses any DSN
+# whose database name does not contain one of its disposable-name
+# markers, and the database created here is named `tenantmind_test`
+# to satisfy that.
+#
+# The Qdrant suite issues `DELETE` against collections it creates, so
+# it gets its own server with its own named volume for the same
+# reason. It lives in this file rather than in a hand-run binary
+# because a Qdrant unpacked under `/tmp` is a Qdrant that vanishes
+# with the next tmpfs clear, and a vector-store gate that silently
+# stops being runnable is worse than no gate at all.
+#
+# This file is LOCAL DEVELOPMENT INFRASTRUCTURE ONLY. It is not the
+# project's deployment artefact and nothing in `backend/` reads it.
+#
+# USAGE
+# -----
+#   export TENANTMIND_TEST_PG_PASSWORD='<any local password>'
+#   export TENANTMIND_TEST_REDIS_PASSWORD='<any local password>'
+#   docker compose up -d --wait      # start
+#   docker compose ps                # status / health
+#   docker compose stop              # stop (keeps data)
+#   docker compose down              # stop and delete the volumes
+#
+#   export TENANTMIND_TEST_QDRANT_URL='http://127.0.0.1:6333'
+#   export TENANTMIND_TEST_REDIS_URL='redis://:<password>@127.0.0.1:6379/0'
+#
+# Both passwords are required and have NO default on purpose: compose
+# fails fast with an explanatory error instead of silently starting a
+# server with a well-known password checked into git. Redis needs one
+# as soon as it is a Celery broker, because an unauthenticated broker
+# is an unauthenticated job queue.
+#
+# DESTRUCTIVE
+# -----------
+#   docker compose down -v   drops the named volumes and therefore
+#                            every row and every vector. That is the
+#                            intended reset for these two databases
+#                            and nothing else.
+
+name: tenantmind
+
+services:
+  postgres:
+    # Pinned to an exact major.minor.patch and Debian variant. Not
+    # `latest`: an unpinned image would change the server version
+    # underneath the migration tests without anyone editing a file.
+    # 16.x is the mature, widely deployed PostgreSQL line.
+    image: postgres:16.15-bookworm
+
+    container_name: tenantmind-postgres
+
+    environment:
+      # Deterministic, disposable database dedicated to the integration
+      # suite. Never reused for development or any real data.
+      POSTGRES_DB: tenantmind_test
+      # Dedicated local role. Creating a separate role (rather than
+      # using the built-in `postgres` superuser) keeps the privilege
+      # the tests run with small and obvious.
+      POSTGRES_USER: tenantmind_test
+      # Supplied from the caller's environment. Never written here.
+      POSTGRES_PASSWORD: ${TENANTMIND_TEST_PG_PASSWORD:?set TENANTMIND_TEST_PG_PASSWORD in your shell, or in a .env file that git ignores}
+
+    ports:
+      # Bound to the loopback interface only. The server must not be
+      # reachable from the network, and nothing in this project needs
+      # it to be.
+      - "127.0.0.1:5432:5432"
+
+    volumes:
+      # Named volume so data survives `docker compose stop` and
+      # `docker compose down`, and is removed only by `down -v`.
+      - tenantmind_pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      # Reports "healthy" only once the server is actually accepting
+      # connections on the test database, so `up --wait` and any
+      # dependent command can rely on readiness.
+      test:
+        ["CMD-SHELL", "pg_isready -U tenantmind_test -d tenantmind_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+    # Reasonable local policy: survive an unexpected daemon restart,
+    # but stay stopped once explicitly stopped by the developer.
+    restart: unless-stopped
+
+  qdrant:
+    # Pinned to an exact major.minor.patch, matching the `qdrant-client`
+    # pin in `backend/requirements.txt`. A server and a client on
+    # different minor versions is how a payload-index or `order_by`
+    # behaviour difference turns into a mystery 400.
+    image: qdrant/qdrant:v1.19.1
+
+    container_name: tenantmind-qdrant
+
+    environment:
+      # Disables telemetry. This server holds test vectors on a laptop;
+      # there is nothing to learn from it and nothing to send.
+      QDRANT__TELEMETRY_DISABLED: "true"
+      # Runs as the unprivileged user the image already defines. Not
+      # overridden: there is no reason to grant it more than it needs.
+      QDRANT__SERVICE__API_KEY: ${TENANTMIND_TEST_QDRANT_API_KEY:-}
+      QDRANT__LOG_LEVEL: INFO
+
+    ports:
+      # Loopback only, same policy as PostgreSQL above: the vector
+      # store must not be reachable from the network.
+      - "127.0.0.1:6333:6333"
+      # The gRPC interface. Bound so the client can negotiate an
+      # alternative if the REST one ever misbehaves; nothing in this
+      # project depends on it today.
+      - "127.0.0.1:6334:6334"
+
+    volumes:
+      # Named volume, same reasoning as `tenantmind_pgdata`: vectors
+      # must survive `stop` and `down` and disappear only on `down -v`.
+      - tenantmind_qdrantdata:/qdrant/storage
+
+    healthcheck:
+      # `/healthz` is the readiness endpoint. `up --wait` therefore
+      # completes only once the collection API actually answers, which
+      # is what the integration suite needs — not merely that the
+      # process is alive.
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+    # Same policy as the PostgreSQL service.
+    restart: unless-stopped
+
+  redis:
+    # Pinned to an exact major.minor.patch and the same Debian variant the
+    # PostgreSQL service uses, so a pull months from now cannot change the
+    # broker version underneath the Celery worker without anyone editing a file.
+    #
+    # 7.4 rather than 8.x, deliberately. 7.4 is the mature, long-lived 7.x line
+    # and is still receiving patches (7.4.11 in August 2026), and it keeps the
+    # server on the RSALv2/SSPL licensing the project has always been able to
+    # reason about. Redis 8.x relicensed to AGPLv3, which is a question this
+    # project does not need to answer in order to run a local test broker.
+    image: redis:7.4.11-bookworm
+
+    container_name: tenantmind-redis
+
+    command:
+      # `--requirepass` rather than an ACL user. One local password is the
+      # whole requirement here; an ACL file would be a second thing to keep
+      # correct for no additional protection on a loopback-only test broker.
+      # The value comes from the caller's environment and is never written here.
+      - redis-server
+      - --requirepass
+      - ${TENANTMIND_TEST_REDIS_PASSWORD:?set TENANTMIND_TEST_REDIS_PASSWORD in your shell, or in a .env file that git ignores}
+      # Persistence is off on purpose, and this is a real decision rather than an
+      # omission. Redis here is a *broker*, and PMP §19 lists Redis's task role as
+      # "temporary task information" and "worker/task coordination" — the queue is a
+      # hand-off, not a system of record. Nothing in Redis is the only copy of
+      # anything: the authoritative ingestion state is the `documents` row in
+      # PostgreSQL, which is exactly why the durability question belongs with the
+      # retry/failure-tracking work in a later Phase 5 step rather than with an
+      # unused volume here. A named volume on this service would imply a guarantee
+      # that no code in the project yet reads back.
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+
+    environment:
+      # Read by `redis-cli` so the healthcheck can authenticate without putting
+      # the password on a command line, where it would be visible in the
+      # container's process list.
+      REDISCLI_AUTH: ${TENANTMIND_TEST_REDIS_PASSWORD:?set TENANTMIND_TEST_REDIS_PASSWORD in your shell, or in a .env file that git ignores}
+
+    ports:
+      # Loopback only, same policy as the two services above. The broker must not
+      # be reachable from the network: with a single shared password, anything
+      # that can open this port can enqueue a job for this worker to execute.
+      - "127.0.0.1:6379:6379"
+
+    healthcheck:
+      # `PING` and an authentication round trip, so `up --wait` completes only
+      # once the broker will actually accept work — a server that answers TCP
+      # but rejects AUTH is not ready, and neither is one still loading its
+      # dataset. The credential comes from REDISCLI_AUTH above rather than from
+      # this command line.
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+    # Same policy as the two services above.
+    restart: unless-stopped
+
+volumes:
+  tenantmind_pgdata:
+  tenantmind_qdrantdata:

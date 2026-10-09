@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/*
+ * TenantMind design tokens.
+ *
+ * Light-first enterprise SaaS palette. Semantic tokens map through
+ * `@theme inline` so components use `bg-background`, `text-foreground`,
+ * `border-border`, `bg-primary`, ... — swapping the palette here restyles the
+ * whole app. Dark mode follows the OS preference via CSS variables.
+ */
+
+:root {
+  --background: #f8fafc; /* slate-50 */
+  --surface: #ffffff;
+  --foreground: #0f172a; /* slate-900 */
+  --muted: #64748b; /* slate-500 */
+  --border: #e2e8f0; /* slate-200 */
+  --primary: #4f46e5; /* indigo-600 */
+  --primary-hover: #4338ca; /* indigo-700 */
+  --primary-foreground: #ffffff;
+  --danger: #e11d48; /* rose-600 */
+  --danger-hover: #be123c; /* rose-700 */
+  --success: #059669; /* emerald-600 */
+  --warning: #d97706; /* amber-600 */
+  --ring: #6366f1; /* indigo-500 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1220;
+    --surface: #131c30;
+    --foreground: #e2e8f0; /* slate-200 */
+    --muted: #94a3b8; /* slate-400 */
+    --border: #22304a;
+    --primary: #6366f1;
+    --primary-hover: #818cf8;
+    --primary-foreground: #ffffff;
+    --danger: #f43f5e;
+    --danger-hover: #fb7185;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --ring: #818cf8;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus visibility is driven by the components' focus-visible rings, but a
+   global fallback keeps keyboard users safe on any stray element. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

@@ -1,0 +1,140 @@
+# ============================================================
+# TenantMind - Python
+# ============================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+pycache/
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# mypy / type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Ruff
+.ruff_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ============================================================
+# TenantMind - Environment & secrets
+# ============================================================
+
+# Real environment files. Only .env.example is committed.
+.env
+.env.*
+!.env.example
+
+# ============================================================
+# TenantMind - Application runtime
+# ============================================================
+
+# Uploaded document storage (tenant-scoped object storage on local disk)
+storage/
+uploads/
+
+# Cached ML model weights (embedder + cross-encoder reranker)
+model_cache/
+models/
+.cache/huggingface/
+.huggingface/
+
+# Local data / database dumps
+*.sql
+*.dump
+data/
+
+# ============================================================
+# TenantMind - IDE / editor
+# ============================================================
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.code-workspace
+.project
+.pydevproject
+.settings/
+
+# ============================================================
+# TenantMind - Evaluation output
+# ============================================================
+
+eval/results.json
+eval/report.md
+eval/dataset/generated/
+
+# ============================================================
+# TenantMind - OS
+# ============================================================
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Windows NTFS alternate data stream artifacts (Zone.Identifier)
+*.Zone.Identifier
+:*:Zone.Identifier
+
+# ============================================================
+# TenantMind - Logs
+# ============================================================
+
+*.log
+logs/

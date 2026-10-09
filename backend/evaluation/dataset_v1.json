@@ -1,0 +1,464 @@
+{
+  "version": 1,
+  "name": "meridian-cloud-eval",
+  "created": "2026-10-07",
+  "description": "Deterministic evaluation corpus and ground truth for PMP Phase 8. All content is fictional ('Meridian Cloud'); no real tenant, user or production data. Documents are ingested through the real TenantMind pipeline; ground-truth ids are dataset-internal slugs resolved to real UUIDs at seed time.",
+  "documents": [
+    {
+      "slug": "hr-handbook",
+      "filename": "hr-handbook.md",
+      "text": "# Meridian Cloud Employee Handbook\n\n## Annual Leave\nEvery full-time employee receives 25 days of annual leave per year. Annual leave accrues monthly and may be carried over up to five days into the next calendar year. Leave requests must be approved by the employee's manager at least two weeks in advance, except for emergency leave.\n\n## Remote Work\nEmployees may work remotely up to three days per week under the flexible remote work policy; approval is not needed for Tuesday or Wednesday. Thursday is an office anchor day for most teams. Employees who work remotely must use the company VPN. New parents receive 20 weeks of fully paid parental leave, which may be taken any time within the first year after the birth or adoption of a child. Sick leave is separate and does not count against annual leave.\n\n## Records\nEmployee personnel records are confidential. Managers must store evaluation notes in the HR system and may not keep confidential records on personal devices. Departing employee records are handled according to the company retention schedule."
+    },
+    {
+      "slug": "security-policy",
+      "filename": "security-policy.md",
+      "text": "# Meridian Cloud Security Policy\n\n## Passwords and Authentication\nAll accounts must use a password of at least 16 characters. Passwords must be rotated every 90 days and must never be reused across company systems. Multi-factor authentication is mandatory for every account and is first required at account provisioning time, before any access is granted. Session tokens expire after 8 hours of inactivity.\n\n## Network and Logging\nRemote access requires the company VPN. Access to the production environment is logged; access logs are retained for 60 days. System-level event logs are covered by the separate data retention schedule. Security awareness training is mandatory once per quarter, and completion is tracked by the people team.\n\n## Incidents\nAny suspected compromise must be reported through the incident response runbook within 24 hours. Never share credentials, and never disable MFA without written approval from the security team."
+    },
+    {
+      "slug": "data-retention",
+      "filename": "data-retention.md",
+      "text": "# Meridian Cloud Data Retention Schedule\n\n## Financial Records\nFinancial records, including invoices and tax documents, are retained for 7 years after the end of the fiscal year in which they were created.\n\n## Customer Data\nCustomer personal data is deleted no later than 24 months after account closure. Customer chat transcripts are retained for 12 months from the date of the conversation and then permanently deleted. Marketing contact data is retained for 18 months after the last engagement.\n\n## Logs and Employee Data\nSystem logs are retained for 90 days. Employee personnel records are retained for 7 years after termination. Backup snapshots are retained for 30 days. Any retention period in this schedule takes precedence over conflicting defaults in product documentation."
+    },
+    {
+      "slug": "incident-response",
+      "filename": "incident-response.md",
+      "text": "# Meridian Cloud Incident Response Runbook\n\n## Severity Levels\nSEV-1 incidents, a complete outage or data breach, require an initial response within 30 minutes, by the on-call engineer, around the clock. SEV-2 incidents, a degraded service for a subset of customers, require a response within 4 hours. SEV-3 incidents, minor issues with a workaround, require a response by the next business day.\n\n## Process\nEvery incident receives a page through the on-call rotation. The incident commander coordinates, and the communications lead posts customer updates. A postmortem (incident review report) must be filed within five business days of resolution for SEV-1 and SEV-2 incidents. Postmortems name the root cause and the follow-up actions, but never blame individuals."
+    },
+    {
+      "slug": "quarterly-q1",
+      "filename": "quarterly-q1-2026.md",
+      "text": "# Meridian Cloud Q1 2026 Quarterly Review\n\n## Financial Highlights\nRevenue for the first quarter of 2026 was $2.4 million. Annual recurring revenue reached $9.6 million at the end of March. Gross margin was 74%.\n\n## Product and Customers\nNet promoter score in Q1 2026 was 42. Customer churn was 1.8% for the quarter. The company ended the quarter with 118 employees across five offices. The top strategic priority for the quarter was deepening the RAG retrieval and evaluation toolkit."
+    },
+    {
+      "slug": "quarterly-q2",
+      "filename": "quarterly-q2-2026.md",
+      "text": "# Meridian Cloud Q2 2026 Quarterly Review\n\n## Financial Highlights\nRevenue for the second quarter of 2026 was $2.9 million. Annual recurring revenue reached $11.6 million at the end of June. Gross margin was 76%.\n\n## Product and Customers\nNet promoter score in Q2 2026 improved to 51. Customer churn fell to 1.2% for the quarter. Headcount grew to 137 across six offices. The evaluation toolkit preview shipped to twelve design partners."
+    },
+    {
+      "slug": "product-roadmap",
+      "filename": "product-roadmap.md",
+      "text": "# Meridian Cloud Product Roadmap\n\n## 2026 Releases\nSingle sign-on (SSO) integration ships in the second quarter of 2026. The RAG evaluation toolkit ships in the third quarter of 2026 as a public beta. API version 2, with expanded metadata filters, ships in the third quarter of 2026. A mobile companion application ships in the fourth quarter of 2026.\n\n## In Development\nThe hybrid retrieval latency dashboard is in private preview. Feedback-driven reranking tuning is a research item with no committed release. Everything on this roadmap is subject to change and does not constitute a commitment."
+    },
+    {
+      "slug": "support-troubleshooting",
+      "filename": "support-troubleshooting.md",
+      "text": "# Meridian Cloud Support Troubleshooting Guide\n\n## Error Codes\nUPLOAD-413 means the uploaded file exceeds the size limit; the fix is to split the file or reduce its size. AUTH-104 means the session token has expired; the first troubleshooting step is to re-authenticate through the login page. SYNC-501 means a sync has stalled, usually because the client cannot reach the API; verify network connectivity and retry, and confirm the VPN is connected for remote networks. RAG-302 means no documents have been indexed for the workspace; the fix is to check the ingestion job status and re-run ingestion until at least one document is ready.\n\n## Escalation\nIf the error persists after the documented steps, gather the request id and timestamps and escalate to tier two support with the customer id."
+    },
+    {
+      "slug": "onboarding-checklist",
+      "filename": "onboarding-checklist.md",
+      "text": "# Meridian Cloud New Hire Onboarding Checklist\n\n## Day Zero\nIT access, laptop, badge and email are provisioned on day zero. New hires enroll in multi-factor authentication during their first login. Accounts are disabled automatically 24 hours after the agreed start date if onboarding is not completed.\n\n## First Weeks\nNew hires attend a security awareness session in week one, a product overview in week two, and meet their manager weekly. The probation period lasts three months, after which the manager submits a confirmation review. Day-zero provisioning overlaps with the remote access policy for work-from-home employees."
+    },
+    {
+      "slug": "competitor-analysis",
+      "filename": "competitor-analysis.md",
+      "text": "# Meridian Cloud Competitor Analysis\n\n## Pricing\nNimbusDocs charges $12 per user per month. Statis charges $9 per user per month. CogniBase charges $19 per user per month and targets enterprise buyers. CogniBase positions itself as a managed retrieval platform with strong evaluation tooling.\n\n## Positioning\nNimbusDocs is strongest in simple document search, while Statis is strongest in workflow automation. Meridian Cloud differentiates on hybrid retrieval accuracy, citations, and its evaluation toolkit. No competitor outside CogniBase publicly demonstrates retrieval evaluation metrics."
+    },
+    {
+      "slug": "legal-terms",
+      "filename": "legal-terms.md",
+      "text": "# Meridian Cloud Terms of Service\n\n## Subscriptions\nSubscriptions auto-renew monthly unless the customer gives 30 days written notice before renewal. On termination, the customer may request a complete data export of their stored data, which Meridian Cloud provides within 7 business days.\n\n## Service Level and Liability\nThe service level agreement guarantees 99.9% monthly uptime. Credits are issued when availability falls below the SLA. Meridian Cloud's total liability under these terms is capped at the amount paid in the previous 12 months. Either party may terminate for material breach with 30 days written notice and a cure period."
+    },
+    {
+      "slug": "company-history",
+      "filename": "company-history.md",
+      "text": "# Meridian Cloud Company History\n\nMeridian Cloud was founded in 2019 in Austin, Texas by three co-founders. The company raised an $8 million Series A in 2021 and a $22 million Series B in 2023, when headcount was under one hundred. Today the company serves customers in 14 countries and operates a hybrid workspace model. The founding product was a document search API; retrieval evaluation metrics were added to the product in 2026."
+    }
+  ],
+  "question_categories": [
+    "simple_factual",
+    "multi_document",
+    "specific_detail",
+    "context_required",
+    "similar_terminology",
+    "unanswerable"
+  ],
+  "question_tags": [
+    "bm25_favored",
+    "semantic_favored",
+    "hybrid_favored",
+    "rerank_favored",
+    "context_required",
+    "factoid"
+  ],
+  "questions": [
+    {
+      "id": "q001",
+      "category": "simple_factual",
+      "tags": ["factoid"],
+      "question": "How many days of annual leave does a Meridian Cloud employee receive per year?",
+      "expected_documents": ["hr-handbook"],
+      "key_phrases": [{"document": "hr-handbook", "phrase": "25 days of annual leave"}],
+      "reference_answer": "25 days of annual leave per year.",
+      "answerable": true
+    },
+    {
+      "id": "q002",
+      "category": "simple_factual",
+      "tags": ["factoid", "bm25_favored"],
+      "question": "What is the minimum length for a Meridian Cloud account password?",
+      "expected_documents": ["security-policy"],
+      "key_phrases": [{"document": "security-policy", "phrase": "at least 16 characters"}],
+      "reference_answer": "At least 16 characters.",
+      "answerable": true
+    },
+    {
+      "id": "q003",
+      "category": "simple_factual",
+      "tags": ["factoid", "bm25_favored"],
+      "question": "For how long must Meridian Cloud keep financial records such as invoices?",
+      "expected_documents": ["data-retention"],
+      "key_phrases": [{"document": "data-retention", "phrase": "retained for 7 years"}],
+      "reference_answer": "Financial records are retained for 7 years.",
+      "answerable": true
+    },
+    {
+      "id": "q004",
+      "category": "simple_factual",
+      "tags": ["factoid"],
+      "question": "What is the initial response time target for a SEV-1 incident?",
+      "expected_documents": ["incident-response"],
+      "key_phrases": [{"document": "incident-response", "phrase": "within 30 minutes"}],
+      "reference_answer": "Within 30 minutes.",
+      "answerable": true
+    },
+    {
+      "id": "q005",
+      "category": "specific_detail",
+      "tags": ["factoid"],
+      "question": "What was Meridian Cloud's revenue in the first quarter of 2026?",
+      "expected_documents": ["quarterly-q1"],
+      "key_phrases": [{"document": "quarterly-q1", "phrase": "$2.4 million"}],
+      "reference_answer": "$2.4 million.",
+      "answerable": true
+    },
+    {
+      "id": "q006",
+      "category": "specific_detail",
+      "tags": ["factoid", "bm25_favored"],
+      "question": "Which error code is shown when an uploaded file exceeds the size limit?",
+      "expected_documents": ["support-troubleshooting"],
+      "key_phrases": [{"document": "support-troubleshooting", "phrase": "UPLOAD-413"}],
+      "reference_answer": "UPLOAD-413.",
+      "answerable": true
+    },
+    {
+      "id": "q007",
+      "category": "simple_factual",
+      "tags": ["factoid"],
+      "question": "How long is the probation period for a new hire?",
+      "expected_documents": ["onboarding-checklist"],
+      "key_phrases": [{"document": "onboarding-checklist", "phrase": "lasts three months"}],
+      "reference_answer": "Three months.",
+      "answerable": true
+    },
+    {
+      "id": "q008",
+      "category": "simple_factual",
+      "tags": ["factoid"],
+      "question": "In what year was Meridian Cloud founded?",
+      "expected_documents": ["company-history"],
+      "key_phrases": [{"document": "company-history", "phrase": "founded in 2019"}],
+      "reference_answer": "2019.",
+      "answerable": true
+    },
+    {
+      "id": "q009",
+      "category": "simple_factual",
+      "tags": ["factoid", "bm25_favored"],
+      "question": "Which competitor charges the highest monthly price per user?",
+      "expected_documents": ["competitor-analysis"],
+      "key_phrases": [{"document": "competitor-analysis", "phrase": "CogniBase charges $19"}],
+      "reference_answer": "CogniBase, at $19 per user per month.",
+      "answerable": true
+    },
+    {
+      "id": "q010",
+      "category": "simple_factual",
+      "tags": ["factoid", "bm25_favored"],
+      "question": "What uptime percentage does the Meridian Cloud service level agreement guarantee?",
+      "expected_documents": ["legal-terms"],
+      "key_phrases": [{"document": "legal-terms", "phrase": "99.9% monthly uptime"}],
+      "reference_answer": "99.9% monthly uptime.",
+      "answerable": true
+    },
+    {
+      "id": "q011",
+      "category": "multi_document",
+      "tags": ["hybrid_favored"],
+      "question": "Did Meridian Cloud's net promoter score improve between the first and second quarter of 2026?",
+      "expected_documents": ["quarterly-q1", "quarterly-q2"],
+      "key_phrases": [
+        {"document": "quarterly-q1", "phrase": "Net promoter score in Q1 2026 was 42"},
+        {"document": "quarterly-q2", "phrase": "Net promoter score in Q2 2026 improved to 51"}
+      ],
+      "reference_answer": "Yes, the net promoter score improved from 42 in Q1 2026 to 51 in Q2 2026.",
+      "answerable": true
+    },
+    {
+      "id": "q012",
+      "category": "multi_document",
+      "tags": ["hybrid_favored", "factoid"],
+      "question": "By how much did annual recurring revenue grow between the end of March and the end of June 2026?",
+      "expected_documents": ["quarterly-q1", "quarterly-q2"],
+      "key_phrases": [
+        {"document": "quarterly-q1", "phrase": "Annual recurring revenue reached $9.6 million"},
+        {"document": "quarterly-q2", "phrase": "Annual recurring revenue reached $11.6 million"}
+      ],
+      "reference_answer": "Annual recurring revenue grew from $9.6 million to $11.6 million, an increase of $2 million.",
+      "answerable": true
+    },
+    {
+      "id": "q013",
+      "category": "multi_document",
+      "tags": ["context_required"],
+      "question": "A remote employee sees an AUTH-104 error and then a stalled sync. According to the documentation, what two steps should they take in order?",
+      "expected_documents": ["support-troubleshooting", "security-policy"],
+      "key_phrases": [
+        {"document": "support-troubleshooting", "phrase": "AUTH-104 means the session token has expired"},
+        {"document": "security-policy", "phrase": "Remote access requires the company VPN"}
+      ],
+      "reference_answer": "Re-authenticate through the login page to resolve AUTH-104, then verify the VPN is connected and retry the sync to resolve SYNC-501.",
+      "answerable": true
+    },
+    {
+      "id": "q014",
+      "category": "multi_document",
+      "tags": ["context_required"],
+      "question": "A manager starts a two-week sabbatical the same week a new hire joins. Which two documents together cover the new hire's access setup and the manager's leave?",
+      "expected_documents": ["onboarding-checklist", "hr-handbook"],
+      "key_phrases": [
+        {"document": "onboarding-checklist", "phrase": "IT access, laptop, badge and email are provisioned on day zero"},
+        {"document": "hr-handbook", "phrase": "Leave requests must be approved by the employee's manager"}
+      ],
+      "reference_answer": "The onboarding checklist covers day-zero access provisioning and the employee handbook governs leave requests and approval.",
+      "answerable": true
+    },
+    {
+      "id": "q015",
+      "category": "multi_document",
+      "tags": ["context_required"],
+      "question": "A customer's account is closed, then their client reports SYNC-501. Which two documents cover how long their personal data is kept and what the sync error means?",
+      "expected_documents": ["data-retention", "support-troubleshooting"],
+      "key_phrases": [
+        {"document": "data-retention", "phrase": "deleted no later than 24 months after account closure"},
+        {"document": "support-troubleshooting", "phrase": "SYNC-501 means a sync has stalled"}
+      ],
+      "reference_answer": "The data retention schedule (24 months after account closure) and the support troubleshooting guide (SYNC-501 meaning and fix).",
+      "answerable": true
+    },
+    {
+      "id": "q016",
+      "category": "multi_document",
+      "tags": ["factoid"],
+      "question": "Meridian Cloud's Q1 2026 report lists 118 employees. In which earlier year did the company raise its Series B round, when headcount was below one hundred?",
+      "expected_documents": ["quarterly-q1", "company-history"],
+      "key_phrases": [
+        {"document": "quarterly-q1", "phrase": "118 employees"},
+        {"document": "company-history", "phrase": "Series B in 2023"}
+      ],
+      "reference_answer": "Series B was raised in 2023.",
+      "answerable": true
+    },
+    {
+      "id": "q017",
+      "category": "specific_detail",
+      "tags": ["factoid"],
+      "question": "How much time does Meridian Cloud allow before customer personal data must be deleted after account closure?",
+      "expected_documents": ["data-retention"],
+      "key_phrases": [{"document": "data-retention", "phrase": "24 months after account closure"}],
+      "reference_answer": "No later than 24 months after account closure.",
+      "answerable": true
+    },
+    {
+      "id": "q018",
+      "category": "specific_detail",
+      "tags": ["factoid", "semantic_favored"],
+      "question": "In which quarter of 2026 is the retrieval benchmarking and quality toolkit planned to ship as a public beta?",
+      "expected_documents": ["product-roadmap"],
+      "key_phrases": [{"document": "product-roadmap", "phrase": "ships in the third quarter of 2026 as a public beta"}],
+      "reference_answer": "The third quarter (Q3) of 2026.",
+      "answerable": true
+    },
+    {
+      "id": "q019",
+      "category": "specific_detail",
+      "tags": ["factoid"],
+      "question": "For how long are customer chat transcripts kept before deletion?",
+      "expected_documents": ["data-retention"],
+      "key_phrases": [{"document": "data-retention", "phrase": "retained for 12 months"}],
+      "reference_answer": "12 months from the date of the conversation.",
+      "answerable": true
+    },
+    {
+      "id": "q020",
+      "category": "specific_detail",
+      "tags": ["factoid", "semantic_favored"],
+      "question": "What is the maximum amount Meridian Cloud could be liable for under the terms of service?",
+      "expected_documents": ["legal-terms"],
+      "key_phrases": [{"document": "legal-terms", "phrase": "capped at the amount paid in the previous 12 months"}],
+      "reference_answer": "Total liability is capped at the amount paid in the previous 12 months.",
+      "answerable": true
+    },
+    {
+      "id": "q021",
+      "category": "specific_detail",
+      "tags": ["factoid"],
+      "question": "When must a response begin for a minor SEV-3 issue that has a workaround?",
+      "expected_documents": ["incident-response"],
+      "key_phrases": [{"document": "incident-response", "phrase": "by the next business day"}],
+      "reference_answer": "By the next business day.",
+      "answerable": true
+    },
+    {
+      "id": "q022",
+      "category": "context_required",
+      "tags": ["semantic_favored"],
+      "question": "An employee wants to stay home and work on a Tuesday without asking for permission. Is that allowed?",
+      "expected_documents": ["hr-handbook"],
+      "key_phrases": [{"document": "hr-handbook", "phrase": "approval is not needed for Tuesday or Wednesday"}],
+      "reference_answer": "Yes, employees may work remotely up to three days per week, and approval is not needed for Tuesday.",
+      "answerable": true
+    },
+    {
+      "id": "q023",
+      "category": "context_required",
+      "tags": ["semantic_favored"],
+      "question": "When must the incident review report be completed after a major incident is resolved?",
+      "expected_documents": ["incident-response"],
+      "key_phrases": [{"document": "incident-response", "phrase": "filed within five business days"}],
+      "reference_answer": "Within five business days of resolution for SEV-1 and SEV-2 incidents.",
+      "answerable": true
+    },
+    {
+      "id": "q024",
+      "category": "context_required",
+      "tags": ["semantic_favored"],
+      "question": "Can a former customer ask for a copy of all their stored information after cancelling?",
+      "expected_documents": ["legal-terms"],
+      "key_phrases": [{"document": "legal-terms", "phrase": "complete data export of their stored data"}],
+      "reference_answer": "Yes, on termination a customer may request a complete data export within 7 business days.",
+      "answerable": true
+    },
+    {
+      "id": "q025",
+      "category": "context_required",
+      "tags": ["semantic_favored"],
+      "question": "What happens to a user's personal information after their account ends?",
+      "expected_documents": ["data-retention"],
+      "key_phrases": [{"document": "data-retention", "phrase": "deleted no later than 24 months after account closure"}],
+      "reference_answer": "It is deleted no later than 24 months after account closure.",
+      "answerable": true
+    },
+    {
+      "id": "q026",
+      "category": "context_required",
+      "tags": ["semantic_favored", "factoid"],
+      "question": "How often must employees replace their security credentials?",
+      "expected_documents": ["security-policy"],
+      "key_phrases": [{"document": "security-policy", "phrase": "rotated every 90 days"}],
+      "reference_answer": "Passwords must be rotated every 90 days.",
+      "answerable": true
+    },
+    {
+      "id": "q027",
+      "category": "similar_terminology",
+      "tags": ["factoid", "hybrid_favored"],
+      "question": "How long does the retention schedule keep system-level event logs?",
+      "expected_documents": ["data-retention"],
+      "key_phrases": [{"document": "data-retention", "phrase": "System logs are retained for 90 days"}],
+      "reference_answer": "90 days.",
+      "answerable": true
+    },
+    {
+      "id": "q028",
+      "category": "similar_terminology",
+      "tags": ["factoid", "bm25_favored"],
+      "question": "How long does the security policy keep access logs from the production environment?",
+      "expected_documents": ["security-policy"],
+      "key_phrases": [{"document": "security-policy", "phrase": "retained for 60 days"}],
+      "reference_answer": "60 days.",
+      "answerable": true
+    },
+    {
+      "id": "q029",
+      "category": "similar_terminology",
+      "tags": ["factoid", "hybrid_favored"],
+      "question": "For how many years are a terminated employee's personnel records kept?",
+      "expected_documents": ["data-retention"],
+      "key_phrases": [{"document": "data-retention", "phrase": "retained for 7 years after termination"}],
+      "reference_answer": "7 years after termination.",
+      "answerable": true
+    },
+    {
+      "id": "q030",
+      "category": "similar_terminology",
+      "tags": ["factoid", "rerank_favored"],
+      "question": "At what point in the account lifecycle is multi-factor authentication first required?",
+      "expected_documents": ["security-policy"],
+      "key_phrases": [{"document": "security-policy", "phrase": "is first required at account provisioning time"}],
+      "reference_answer": "At account provisioning time, before any access is granted.",
+      "answerable": true
+    },
+    {
+      "id": "q031",
+      "category": "unanswerable",
+      "tags": [],
+      "question": "What is Meridian Cloud's stock ticker symbol?",
+      "expected_documents": [],
+      "key_phrases": [],
+      "reference_answer": "",
+      "answerable": false
+    },
+    {
+      "id": "q032",
+      "category": "unanswerable",
+      "tags": [],
+      "question": "Which team won the company's internal hackathon in 2024?",
+      "expected_documents": [],
+      "key_phrases": [],
+      "reference_answer": "",
+      "answerable": false
+    },
+    {
+      "id": "q033",
+      "category": "unanswerable",
+      "tags": [],
+      "question": "What is the salary band for a senior backend engineer at Meridian Cloud?",
+      "expected_documents": [],
+      "key_phrases": [],
+      "reference_answer": "",
+      "answerable": false
+    },
+    {
+      "id": "q034",
+      "category": "unanswerable",
+      "tags": [],
+      "question": "On which public holidays is the Austin office closed?",
+      "expected_documents": [],
+      "key_phrases": [],
+      "reference_answer": "",
+      "answerable": false
+    },
+    {
+      "id": "q035",
+      "category": "context_required",
+      "tags": ["hybrid_favored"],
+      "question": "The support team sees error RAG-302 for a workspace. What does the error indicate and what is the recommended action?",
+      "expected_documents": ["support-troubleshooting"],
+      "key_phrases": [{"document": "support-troubleshooting", "phrase": "RAG-302 means no documents have been indexed"}],
+      "reference_answer": "RAG-302 indicates no documents have been indexed; check ingestion job status and re-run ingestion until a document is ready.",
+      "answerable": true
+    },
+    {
+      "id": "q036",
+      "category": "context_required",
+      "tags": ["rerank_favored", "factoid"],
+      "question": "Which error code should a customer expect after their session has been inactive for more than eight hours?",
+      "expected_documents": ["support-troubleshooting"],
+      "key_phrases": [{"document": "support-troubleshooting", "phrase": "AUTH-104 means the session token has expired"}],
+      "reference_answer": "AUTH-104.",
+      "answerable": true
+    }
+  ]
+}
